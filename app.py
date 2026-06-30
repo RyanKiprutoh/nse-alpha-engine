@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
 import subprocess
@@ -6,8 +7,11 @@ import sys
 app = Flask(__name__)
 app.secret_key = 'nse_alpha_secure_key'
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, 'nse_data.db')
+
 def get_db_connection():
-    conn = sqlite3.connect('nse_data.db')
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -24,8 +28,11 @@ def index():
     # Fetch log records of generated signals
     signals = conn.execute("SELECT * FROM trade_signals ORDER BY timestamp DESC LIMIT 10").fetchall()
     
+    # Fetch the active portfolio positions
+    portfolio = conn.execute("SELECT * FROM portfolio WHERE status='OPEN' ORDER BY date_entered DESC").fetchall()
+    
     conn.close()
-    return render_template('index.html', tickers=tickers, recent_data=recent_data, signals=signals)
+    return render_template('index.html', tickers=tickers, recent_data=recent_data, signals=signals, portfolio=portfolio)
 
 @app.route('/add_ticker', methods=['POST'])
 def add_ticker():
@@ -40,6 +47,22 @@ def add_ticker():
             flash(f"{ticker} is already being monitored.", "warning")
         finally:
             conn.close()
+    return redirect(url_for('index'))
+
+@app.route('/execute_trade/<signal_id>', methods=['POST'])
+def execute_trade(signal_id):
+    conn = get_db_connection()
+    # 1. Get the signal details
+    signal = conn.execute("SELECT * FROM trade_signals WHERE id = ?", (signal_id,)).fetchone()
+    
+    if signal:
+        # 2. Add to portfolio
+        conn.execute("INSERT INTO portfolio (ticker, entry_price, date_entered) VALUES (?, ?, ?)",
+                     (signal['ticker'], signal['price'], signal['date']))
+        conn.commit()
+        flash(f"Trade recorded for {signal['ticker']} at {signal['price']}", "success")
+    
+    conn.close()
     return redirect(url_for('index'))
 
 @app.route('/run_scraper')
@@ -64,4 +87,37 @@ def run_engine():
         return render_template('logs.html', title="Engine Execution Failure", stdout=e.stdout, stderr=e.stderr)
 
 if __name__ == '__main__':
+    # Initialize connection using the absolute path file locator
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS portfolio (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ticker TEXT,
+        entry_price REAL,
+        shares INTEGER,
+        date_entered TEXT,
+        status TEXT DEFAULT 'OPEN'
+    )
+''')
+    
+    # Ensure the analytical logging platform exists
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS trade_signals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT,
+            ticker TEXT,
+            signal_type TEXT,
+            price REAL,
+            z_score REAL,
+            message TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    conn.commit()
+    conn.close()
+    
+    # Launch local web service engine
     app.run(debug=True, port=5000)

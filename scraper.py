@@ -2,9 +2,13 @@ import pandas as pd
 import sqlite3
 import requests
 from io import StringIO
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, 'nse_data.db')
 
 def get_monitored_tickers():
-    conn = sqlite3.connect('nse_data.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT ticker FROM monitored_tickers")
     tickers = [row[0] for row in cursor.fetchall()]
@@ -18,7 +22,7 @@ def fetch_and_store_data():
     TICKERS = get_monitored_tickers()
     
     # Connect to your SQLite memory bank
-    conn = sqlite3.connect('nse_data.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
     # We use headers to mimic a real web browser so the site doesn't block us

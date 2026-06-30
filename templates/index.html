@@ -5,12 +5,153 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NSE Alpha Quant Dashboard</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CORE DARK THEME OVERRIDES */
+        :root {
+            --bg-color: #0a0a0c;
+            --card-bg: #121318;
+            --border-color: #22252e;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent-green: #00fa9a; /* Neon Afro Vibe */
+            --accent-green-glow: rgba(0, 250, 154, 0.15);
+        }
+
+        html, body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+        }
+
+        .title, .subtitle {
+            color: #ffffff !important;
+            letter-spacing: -0.5px;
+        }
+
+        hr {
+            background-color: var(--border-color);
+            height: 1px;
+        }
+
+        /* CARD STYLING */
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            color: var(--text-main);
+        }
+
+        .card-header {
+            background-color: transparent !important;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: none;
+        }
+
+        .card-header-title {
+            color: #ffffff !important;
+            font-weight: 600;
+        }
+
+        /* SPECIAL HIGHLIGHT FOR PORTFOLIO CARD */
+        .portfolio-card {
+            border: 1px solid var(--accent-green);
+            box-shadow: 0 0 20px var(--accent-green-glow);
+        }
+        .portfolio-card .card-header {
+            background-color: rgba(0, 250, 154, 0.05) !important;
+        }
+        .portfolio-card .card-header-title {
+            color: var(--accent-green) !important;
+        }
+
+        /* TABLE STYLING */
+        .table {
+            background-color: transparent;
+            color: var(--text-main);
+        }
+        
+        .table thead th {
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .table td {
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .table.is-striped tbody tr:not(.is-selected):nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .table.is-hoverable tbody tr:not(.is-selected):hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* FORM INPUTS & BUTTONS */
+        .input {
+            background-color: var(--bg-color);
+            border-color: var(--border-color);
+            color: white;
+            border-radius: 6px;
+        }
+        
+        .input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .input:focus {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 0.125em var(--accent-green-glow);
+        }
+
+        .button {
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .button.is-success {
+            background-color: var(--accent-green);
+            color: #000 !important;
+            border: none;
+        }
+
+        .button.is-success:hover {
+            background-color: #00e08a;
+            box-shadow: 0 0 15px var(--accent-green-glow);
+        }
+
+        .button.is-link {
+            background-color: #3b82f6;
+            border: none;
+        }
+
+        .button.is-primary {
+            background-color: #8b5cf6;
+            border: none;
+        }
+
+        .tag.is-info {
+            background-color: #252836 !important;
+            color: var(--accent-green) !important;
+            border: 1px solid var(--border-color);
+        }
+    </style>
 </head>
 <body>
     <section class="section">
         <div class="container">
-            <h1 class="title">📈 NSE Quantitative Trading Dashboard</h1>
-            <p class="subtitle">End-of-Day Analysis Platform</p>
+            <h1 class="title">📈 Alpha Quant Terminal</h1>
+            <p class="subtitle has-text-grey-light">End-of-Day NSE Analysis Platform</p>
             <hr>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -24,31 +165,31 @@
             <div class="columns">
                 <div class="column is-one-third">
                     <div class="card mb-4">
-                        <header class="card-header"><p class="card-header-title">System Execution Controls</p></header>
+                        <header class="card-header"><p class="card-header-title">System Execution</p></header>
                         <div class="card-content">
                             <div class="buttons">
-                                <a href="{{ url_for('run_scraper') }}" class="button is-link is-fullwidth">⚡ Run Data Scraper</a>
-                                <a href="{{ url_for('run_engine') }}" class="button is-primary is-fullwidth">🧠 Run Analytical Engine</a>
+                                <a href="{{ url_for('run_scraper') }}" class="button is-link is-fullwidth">⚡ Fetch Market Data</a>
+                                <a href="{{ url_for('run_engine') }}" class="button is-primary is-fullwidth">🧠 Run Analytics</a>
                             </div>
                         </div>
                     </div>
 
                     <div class="card">
-                        <header class="card-header"><p class="card-header-title">Add New Instrument Ticker</p></header>
+                        <header class="card-header"><p class="card-header-title">Instrument Watchlist</p></header>
                         <div class="card-content">
                             <form action="{{ url_for('add_ticker') }}" method="POST">
                                 <div class="field has-addons">
                                     <div class="control is-expanded">
-                                        <input class="input" type="text" name="ticker" placeholder="e.g., ABSA, BAT, NCBA" required>
+                                        <input class="input" type="text" name="ticker" placeholder="e.g., ABSA" required>
                                     </div>
                                     <div class="control">
-                                        <button type="submit" class="button is-success">Add Ticker</button>
+                                        <button type="submit" class="button is-success">Add</button>
                                     </div>
                                 </div>
                             </form>
-                            <div class="tags mt-3">
+                            <div class="tags mt-4">
                                 {% for t in tickers %}
-                                    <span class="tag is-info is-light">{{ t.ticker }}</span>
+                                    <span class="tag is-info">{{ t.ticker }}</span>
                                 {% endfor %}
                             </div>
                         </div>
@@ -56,26 +197,27 @@
                 </div>
 
                 <div class="column">
-                    <div class="card mb-4">
-                        <header class="card-header"><p class="card-header-title">Latest System Signal Alerts</p></header>
+                    
+                    <div class="card mb-5 portfolio-card">
+                        <header class="card-header"><p class="card-header-title">Live Portfolio Positions</p></header>
                         <div class="card-content">
-                            {% if not signals %}
-                                <p class="has-text-grey-light">No signals stored in database history yet. Execute engine to process alerts.</p>
+                            {% if not portfolio %}
+                                <p style="color: var(--text-muted)">No open positions. Awaiting trade execution.</p>
                             {% else %}
-                                <table class="table is-striped is-fullwidth">
+                                <table class="table is-fullwidth is-hoverable">
                                     <thead>
                                         <tr>
-                                            <th>Timestamp</th>
-                                            <th>Asset</th>
-                                            <th>Message</th>
+                                            <th>Ticker</th>
+                                            <th>Entry Target</th>
+                                            <th>Date Logged</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for sig in signals %}
+                                        {% for pos in portfolio %}
                                         <tr>
-                                            <td>{{ sig.timestamp }}</td>
-                                            <td><strong>{{ sig.ticker }}</strong></td>
-                                            <td>{{ sig.message }}</td>
+                                            <td><strong style="color: white;">{{ pos.ticker }}</strong></td>
+                                            <td style="color: var(--accent-green);">KES {{ pos.entry_price }}</td>
+                                            <td style="color: var(--text-muted);">{{ pos.date_entered }}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -84,31 +226,40 @@
                         </div>
                     </div>
 
-                    <div class="card">
-                        <header class="card-header"><p class="card-header-title">Database Health Check (Recent Scraped Rows)</p></header>
+                    <div class="card mb-5">
+                        <header class="card-header"><p class="card-header-title">Mathematical Alerts Engine</p></header>
                         <div class="card-content">
-                            <table class="table is-narrow is-hoverable is-fullwidth">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Ticker</th>
-                                        <th>Close Price</th>
-                                        <th>Volume</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for row in recent_data %}
-                                    <tr>
-                                        <td>{{ row.date }}</td>
-                                        <td>{{ row.ticker }}</td>
-                                        <td>KES {{ row.close_price }}</td>
-                                        <td>{{ "{:,}".format(row.volume) }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            {% if not signals %}
+                                <p style="color: var(--text-muted)">System idle. Run analytics to generate structural alerts.</p>
+                            {% else %}
+                                <table class="table is-striped is-fullwidth">
+                                    <thead>
+                                        <tr>
+                                            <th>Time</th>
+                                            <th>Asset</th>
+                                            <th>Directive</th>
+                                            <th>Execute</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for sig in signals %}
+                                        <tr>
+                                            <td style="color: var(--text-muted); font-size: 0.85rem;">{{ sig.timestamp.split(' ')[0] }}</td>
+                                            <td><strong style="color: white;">{{ sig.ticker }}</strong></td>
+                                            <td style="font-size: 0.9rem;">{{ sig.message }}</td>
+                                            <td>
+                                                <form action="{{ url_for('execute_trade', signal_id=sig.id) }}" method="POST">
+                                                    <button type="submit" class="button is-small is-success">Log Trade</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% endif %}
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
