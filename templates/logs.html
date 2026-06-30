@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+</head>
+<body>
+    <section class="section">
+        <div class="container">
+            <h1 class="title">{{ title }}</h1>
+            <a href="{{ url_for('index') }}" class="button is-light mb-4">← Back to Main Dashboard</a>
+            
+            <div class="box" style="background-color: #1e1e1e; color: #d4d4d4; font-family: monospace; white-space: pre-wrap;">
+                <h6>[STANDARD OUT LOGS]</h6>
+                {{ stdout }}
+                {% if stderr %}
+                    <hr style="background-color: #333;">
+                    <h6 class="has-text-danger">[SYSTEM STANDARD ERROR LOGS]</h6>
+                    <span class="has-text-danger">{{ stderr }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</body>
+</html>
