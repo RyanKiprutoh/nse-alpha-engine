@@ -1,0 +1,5 @@
+git add .
+git commit -m "Initial commit" -m 
+git push origin main
+
+cd nse-alpha-engine
