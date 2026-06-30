@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSE Alpha Quant Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+</head>
+<body>
+    <section class="section">
+        <div class="container">
+            <h1 class="title">📈 NSE Quantitative Trading Dashboard</h1>
+            <p class="subtitle">End-of-Day Analysis Platform</p>
+            <hr>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="notification is-{{ category }}">{{ message }}</div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <div class="columns">
+                <div class="column is-one-third">
+                    <div class="card mb-4">
+                        <header class="card-header"><p class="card-header-title">System Execution Controls</p></header>
+                        <div class="card-content">
+                            <div class="buttons">
+                                <a href="{{ url_for('run_scraper') }}" class="button is-link is-fullwidth">⚡ Run Data Scraper</a>
+                                <a href="{{ url_for('run_engine') }}" class="button is-primary is-fullwidth">🧠 Run Analytical Engine</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <header class="card-header"><p class="card-header-title">Add New Instrument Ticker</p></header>
+                        <div class="card-content">
+                            <form action="{{ url_for('add_ticker') }}" method="POST">
+                                <div class="field has-addons">
+                                    <div class="control is-expanded">
+                                        <input class="input" type="text" name="ticker" placeholder="e.g., ABSA, BAT, NCBA" required>
+                                    </div>
+                                    <div class="control">
+                                        <button type="submit" class="button is-success">Add Ticker</button>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="tags mt-3">
+                                {% for t in tickers %}
+                                    <span class="tag is-info is-light">{{ t.ticker }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="column">
+                    <div class="card mb-4">
+                        <header class="card-header"><p class="card-header-title">Latest System Signal Alerts</p></header>
+                        <div class="card-content">
+                            {% if not signals %}
+                                <p class="has-text-grey-light">No signals stored in database history yet. Execute engine to process alerts.</p>
+                            {% else %}
+                                <table class="table is-striped is-fullwidth">
+                                    <thead>
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>Asset</th>
+                                            <th>Message</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for sig in signals %}
+                                        <tr>
+                                            <td>{{ sig.timestamp }}</td>
+                                            <td><strong>{{ sig.ticker }}</strong></td>
+                                            <td>{{ sig.message }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <header class="card-header"><p class="card-header-title">Database Health Check (Recent Scraped Rows)</p></header>
+                        <div class="card-content">
+                            <table class="table is-narrow is-hoverable is-fullwidth">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Ticker</th>
+                                        <th>Close Price</th>
+                                        <th>Volume</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in recent_data %}
+                                    <tr>
+                                        <td>{{ row.date }}</td>
+                                        <td>{{ row.ticker }}</td>
+                                        <td>KES {{ row.close_price }}</td>
+                                        <td>{{ "{:,}".format(row.volume) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

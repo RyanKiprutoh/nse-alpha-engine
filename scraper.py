@@ -3,11 +3,19 @@ import sqlite3
 import requests
 from io import StringIO
 
-# Standard NSE Tickers
-TICKERS = ['SCOM', 'EQTY', 'KCB', 'EABL', 'COOP']
+def get_monitored_tickers():
+    conn = sqlite3.connect('nse_data.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT ticker FROM monitored_tickers")
+    tickers = [row[0] for row in cursor.fetchall()]
+    conn.close()
+    return tickers
 
 def fetch_and_store_data():
     print("Starting data ingestion from African Financials...")
+    
+    # Fetch the dynamic list of tickers from the database
+    TICKERS = get_monitored_tickers()
     
     # Connect to your SQLite memory bank
     conn = sqlite3.connect('nse_data.db')
