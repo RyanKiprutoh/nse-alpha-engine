@@ -1,3 +1,4 @@
+
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
@@ -48,6 +49,17 @@ def add_ticker():
         finally:
             conn.close()
     return redirect(url_for('index'))
+
+# --- RESTORED: REMOVE TICKER FEATURE ---
+@app.route('/remove_ticker/<ticker_name>', methods=['POST'])
+def remove_ticker(ticker_name):
+    conn = get_db_connection()
+    conn.execute("DELETE FROM monitored_tickers WHERE ticker = ?", (ticker_name,))
+    conn.commit()
+    conn.close()
+    flash(f"Removed {ticker_name} from watchlist.", "success")
+    return redirect(url_for('index'))
+# ---------------------------------------
 
 @app.route('/execute_trade/<signal_id>', methods=['POST'])
 def execute_trade(signal_id):

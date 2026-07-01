@@ -145,6 +145,14 @@
             color: var(--accent-green) !important;
             border: 1px solid var(--border-color);
         }
+
+        /* CUSTOM DELETE BUTTON FIX FOR TAGS */
+        .tag .delete-form {
+            display: inline-block;
+            margin-left: 8px;
+            margin-bottom: 0;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -187,9 +195,16 @@
                                     </div>
                                 </div>
                             </form>
+                            
+                            <!-- RESTORED DELETE BUTTONS -->
                             <div class="tags mt-4">
                                 {% for t in tickers %}
-                                    <span class="tag is-info">{{ t.ticker }}</span>
+                                    <span class="tag is-info is-medium">
+                                        {{ t.ticker }}
+                                        <form action="{{ url_for('remove_ticker', ticker_name=t.ticker) }}" method="POST" class="delete-form">
+                                            <button type="submit" class="delete is-small"></button>
+                                        </form>
+                                    </span>
                                 {% endfor %}
                             </div>
                         </div>
@@ -251,7 +266,7 @@
                                                 <form action="{{ url_for('execute_trade', signal_id=sig.id) }}" method="POST">
                                                     <div class="field has-addons">
                                                         <div class="control is-expanded">
-                                                            <input class="input is-small" type="text" name="user_notes" placeholder="e.g. News is clear, risk accepted" required style="background: transparent; color: white; border-color: #22252e;">
+                                                            <input class="input is-small" type="text" name="user_notes" placeholder="Notes..." required style="background: transparent; color: white; border-color: #22252e;">
                                                         </div>
                                                         <div class="control">
                                                             <button type="submit" class="button is-small is-success">Log Trade</button>

@@ -37,8 +37,7 @@ def analyze_market_data():
         group['SMA_30'] = group['close_price'].rolling(window=30, min_periods=1).mean()
         group['STD_30'] = group['close_price'].rolling(window=30, min_periods=1).std()
         group['Z_Score'] = (group['close_price'] - group['SMA_30']) / group['STD_30']
-        
-        # 2. The Volume Breakout Module (10-Day Volume Average)
+
         group['VMA_10'] = group['volume'].rolling(window=10, min_periods=1).mean()
         
         # 3. The Institutional Guardrail (Trend Slope)
