@@ -55,31 +55,43 @@ def analyze_market_data():
         vma = latest_data['VMA_10']
         trend_slope = latest_data['Trend_Slope']
         
+        # --- THE SMART THESIS GENERATOR ---
+        def generate_thesis(ticker, price, z, vol, vma):
+            thesis = f"Calculated {ticker} price KES {price:.2f}. "
+            if z <= -1.5:
+                thesis += f"Asset statistically oversold (Z-Score: {z:.2f}), signaling mean-reversion. "
+            elif z >= 1.5:
+                thesis += f"Asset statistically overbought (Z-Score: {z:.2f}), signaling resistance pullback. "
+            if vol > (vma * 1.5):
+                thesis += f"Validated by institutional volume spike ({int(vol)} vs {int(vma)} avg)."
+            return thesis
+
         # THE LOGIC GATES
         is_high_volume = volume > (vma * 1.5)  
         is_uptrend = trend_slope >= 0
         is_downtrend = trend_slope < 0
         
         # 🟢 BUY ALERTS (Healthy Dips ONLY)
-        # Price dropped to -1.5, but not into panic territory (>-2.5), and the broader trend is UP
         if -2.5 <= z_score <= -1.5 and is_high_volume and is_uptrend:
             msg = "Healthy Support Bounce in an Uptrend!"
+            thesis = generate_thesis(ticker, price, z_score, volume, vma)
             alerts.append(f"[BUY ALERT] | {ticker} | Price: {price} | Z-Score: {z_score:.2f} | {msg}")
-            database_inserts.append((date_str, ticker, 'BUY', price, z_score, msg))
+            # We save the thesis cleanly into the message column for the dashboard
+            database_inserts.append((date_str, ticker, 'BUY', price, z_score, f"{msg} | Thesis: {thesis}"))
             
         # 🔴 SELL ALERTS (Overbought Rips)
-        # Price jumped to +1.5, and the broader trend is DOWN (Dead Cat Bounce)
         elif 1.5 <= z_score <= 2.5 and is_high_volume and is_downtrend:
             msg = "Resistance Hit in a Downtrend!"
+            thesis = generate_thesis(ticker, price, z_score, volume, vma)
             alerts.append(f"[SELL ALERT] | {ticker} | Price: {price} | Z-Score: {z_score:.2f} | {msg}")
-            database_inserts.append((date_str, ticker, 'SELL', price, z_score, msg))
+            database_inserts.append((date_str, ticker, 'SELL', price, z_score, f"{msg} | Thesis: {thesis}"))
             
-        # ⚠️ DANGER ALERTS (Falling Knives / Institutional Dumping)
-        # Price crashed violently below -2.5. Do not try to catch it.
+        # ⚠️ AVOID ALERTS (Falling Knives)
         elif z_score < -2.5 and is_high_volume:
             msg = "CRASH WARNING: Severe Institutional Dumping. Avoid!"
+            thesis = f"Z-Score plummeted to {z_score:.2f}. Structural markdown detected. Blocked entry."
             alerts.append(f"[AVOID ALERT] | {ticker} | Price: {price} | Z-Score: {z_score:.2f} | {msg}")
-            database_inserts.append((date_str, ticker, 'AVOID', price, z_score, msg))
+            database_inserts.append((date_str, ticker, 'AVOID', price, z_score, f"{msg} | Thesis: {thesis}"))
             
     # Output the final results to console terminal
     print("\n--- TODAY'S MARKET SIGNALS ---")

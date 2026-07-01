@@ -249,7 +249,14 @@
                                             <td style="font-size: 0.9rem;">{{ sig.message }}</td>
                                             <td>
                                                 <form action="{{ url_for('execute_trade', signal_id=sig.id) }}" method="POST">
-                                                    <button type="submit" class="button is-small is-success">Log Trade</button>
+                                                    <div class="field has-addons">
+                                                        <div class="control is-expanded">
+                                                            <input class="input is-small" type="text" name="user_notes" placeholder="e.g. News is clear, risk accepted" required style="background: transparent; color: white; border-color: #22252e;">
+                                                        </div>
+                                                        <div class="control">
+                                                            <button type="submit" class="button is-small is-success">Log Trade</button>
+                                                        </div>
+                                                    </div>
                                                 </form>
                                             </td>
                                         </tr>

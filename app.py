@@ -52,15 +52,19 @@ def add_ticker():
 @app.route('/execute_trade/<signal_id>', methods=['POST'])
 def execute_trade(signal_id):
     conn = get_db_connection()
-    # 1. Get the signal details
     signal = conn.execute("SELECT * FROM trade_signals WHERE id = ?", (signal_id,)).fetchone()
     
+    # Grab the manual notes the user typed in the dashboard
+    user_notes = request.form.get('user_notes', '').strip()
+    
     if signal:
-        # 2. Add to portfolio
-        conn.execute("INSERT INTO portfolio (ticker, entry_price, date_entered) VALUES (?, ?, ?)",
-                     (signal['ticker'], signal['price'], signal['date']))
+        # Save both the engine's thesis (from the message) and the user's manual notes
+        conn.execute('''
+            INSERT INTO portfolio (ticker, entry_price, date_entered, thesis, user_notes) 
+            VALUES (?, ?, ?, ?, ?)
+        ''', (signal['ticker'], signal['price'], signal['date'], signal['message'], user_notes))
         conn.commit()
-        flash(f"Trade recorded for {signal['ticker']} at {signal['price']}", "success")
+        flash(f"Trade Journaled for {signal['ticker']}. Ready for SokoPlay execution.", "success")
     
     conn.close()
     return redirect(url_for('index'))
@@ -91,17 +95,6 @@ if __name__ == '__main__':
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS portfolio (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        ticker TEXT,
-        entry_price REAL,
-        shares INTEGER,
-        date_entered TEXT,
-        status TEXT DEFAULT 'OPEN'
-    )
-''')
-    
     # Ensure the analytical logging platform exists
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS trade_signals (
@@ -113,6 +106,20 @@ if __name__ == '__main__':
             z_score REAL,
             message TEXT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # Ensure the NEW portfolio table exists with thesis and user_notes columns
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS portfolio (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ticker TEXT,
+            entry_price REAL,
+            shares INTEGER,
+            date_entered TEXT,
+            thesis TEXT,
+            user_notes TEXT,
+            status TEXT DEFAULT 'OPEN'
         )
     ''')
     
